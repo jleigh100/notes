@@ -1,0 +1,84 @@
+body {
+  background-color: AliceBlue;
+  padding: 5px;
+}
+
+main {
+  padding: 8px;
+}
+
+div {
+  width: 1000px;
+  height: 600px;
+}
+
+
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  padding: 10px;
+  border-radius: 10px;
+}
+.grid-item {
+  background-color: rgba(255, 255, 255, 1);
+  border: 0.1px solid rgba(0, 0, 0, 0.1);
+  padding: 2px;
+  font-size: 30px;
+  text-align: center;
+  border-radius: 5px;
+}
+
+
+
+
+.centered {
+  max-width: 100%;
+  text-align: center;
+}
+
+.button {
+  background-color: DarkGrey;
+  border-radius: 5px;
+  color: DarkBlue;
+  font-size: 20px;
+}
+
+.button:active {
+  transform: translateY(2px);
+}
+
+.activeButton {
+  background-color: DarkGrey;
+  color: Crimson;
+}
+
+.activeButton:active {
+  background-color: DarkRed;
+  transform: none;
+}
+
+
+.navbar {
+  overflow: hidden;
+  background-color: DarkBlue;
+  padding: 5px;
+  border-radius: 10px;
+  text-decoration: none;
+  position: sticky;
+  top: 0;
+}
+
+.navbar a {
+  float: left;
+  color: DarkGrey;
+  text-align: center;
+  padding: 10px;
+  text-decoration: none;
+}
+
+.navbar a.current {
+  background-color: AliceBlue;
+  color: Crimson;
+  border-radius: 5px;
+}
