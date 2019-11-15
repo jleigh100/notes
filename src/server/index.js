@@ -50,7 +50,12 @@ app.get('/', (req, res) => {
 });
 
 app.get('/data', (req, res) => {
-  connection.query("SELECT ID, DATE_FORMAT(FROM_UNIXTIME(TimeStamp), '%Y-%m-%d %H:00') AS DATE, daemonMem FROM `S3Results` WHERE TimeStamp >= 1573642675 ORDER BY TimeStamp DESC", function (error, results, fields) {
+  connection.query(`
+    SELECT ID, DATE_FORMAT( FROM_UNIXTIME( TimeStamp ) , '%Y-%m-%d %H:00' ) AS DATE, AVG( daemonMem ) AS daemonMem
+    FROM S3Results
+    WHERE TimeStamp >= 1573642675
+    GROUP BY ID, DATE_FORMAT( FROM_UNIXTIME( TimeStamp ) , '%Y-%m-%d %H:00' )
+    ORDER BY TimeStamp DESC`, function (error, results, fields) {
     if (error) throw error;
     res.json(results);
   });
