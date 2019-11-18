@@ -4,62 +4,33 @@ import $ from 'jquery';
 
 
 $.get('/data', function(data) {
-  var idArray = [[]];
-  var dateArray = [];
-  var memArray = [];
+  let ids = [];
+  let dates = [];
 
-  for (let i=1; i<22; i++) {
-    for (let j=0;j<data.length;j++) {
-      if (data[j].ID === i) {
-        idArray.push(data[j].ID);
-        dateArray.push(data[j].DATE);
-        memArray.push(data[j].daemonMem);
-      }
-    }
-  }
+  data.forEach((dataPoint) => {
+    if (ids.indexOf(dataPoint.ID) === -1) ids.push(dataPoint.ID);
+    if (dates.indexOf(dataPoint.DATE) === -1) dates.push(dataPoint.DATE);
+  });
 
-
-
-
-
-  var dataPoints = data.length / 22;
-   //  for (let i=0; i<dataPoints; i++) {
-   //    var id1Date = dateArray.slice(0,dataPoints);
-   //    var id1Mem =
-   //    var id2Mem =
-   //    var id3Mem =
-   //    var id4Mem =
-   //  };
-
-    // console.log(memArray);
-    // console.log(idArray);
-
-    let ids = [];
-    let dates = [];
-
-    data.forEach((dataPoint) => {
-      if (ids.indexOf(dataPoint.ID) === -1) ids.push(dataPoint.ID);
-      if (dates.indexOf(dataPoint.DATE) === -1) dates.push(dataPoint.DATE);
-    });
-
-    ids = ids.reverse();
-    dates = dates.reverse();
-
-
-    let totalMem = data.reduce((acc, cur) => {
-      return acc += cur.daemonMem;
-    }, 0);
-    console.log(totalMem);
-    // console.log(dates);
-    let nums = [1 ,2, 3, 4, 5, 6, 7, 8];
-    console.log(nums.map(n => n * n));
-    console.log(nums.filter(n => n < 5));
-    console.log(nums.reduce((acc, cur) => acc += cur, 0))
-
-
+  ids = ids.reverse();
+  dates = dates.reverse();
 
   var canvas = document.getElementById('myChart');
   var ctx = canvas.getContext('2d');
+
+  // var colorSelect = (currentDataPoints, id) => {
+  //   return (currentDataPoints[0].daemonMem === currentDataPoints[currentDataPoints.length-1].daemonMem) ? 'green' : 'red';
+  // }
+
+  function colorSelect(array) {
+    for(var i = 0; i < array.length - 1; i++) {
+        if(array[i].daemonMem != array[i+1].daemonMem) {
+            return 'red';
+        }
+    }
+    return 'green';
+}
+
 
   var options = {
       type: 'line',
@@ -75,20 +46,31 @@ $.get('/data', function(data) {
                   }),
                   borderWidth: 1,
                   fill: false,
-                  borderColor:  'rgb(255, 99, 132)'
-              }
+                  borderColor: colorSelect(currentDataPoints),
+                  hidden: colorSelect(currentDataPoints) == 'green' ? true : false
+              };
               return output;
           })
       },
       options: {
-          scales: {
-              yAxes: [{
-                  ticks: {
-                      beginAtZero: true
-                  }
-              }]
-          }
-      }
+        scales: {
+            yAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: 'DaemonMem'
+              },
+                ticks: {
+                    beginAtZero: true
+                }
+            }],
+            xAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: 'Date'
+              }
+            }]
+        }
+    }
   };
 
   var myChart = new Chart(ctx, options);

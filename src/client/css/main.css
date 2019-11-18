@@ -7,9 +7,13 @@ main {
   padding: 8px;
 }
 
+h1 {
+  font-size: 30px;
+}
+
 div {
-  width: 1000px;
-  height: 600px;
+  width: 1200px;
+  height: 720px;
 }
 
 
