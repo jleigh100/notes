@@ -2,7 +2,6 @@ import Chart from 'chart.js';
 import $ from 'jquery';
 
 
-
 $.get('/data', function(data) {
   let ids = [];
   let dates = [];
@@ -77,7 +76,6 @@ $.get('/data', function(data) {
 
   canvas.addEventListener('click', evt => {
     var firstPoint = myChart.getElementAtEvent(evt)[0];
-
     if (firstPoint) {
       var label = myChart.data.labels[firstPoint._index];
       var value = myChart.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
@@ -85,4 +83,99 @@ $.get('/data', function(data) {
     }
   });
 
+  var showHideAll = document.getElementById('showHideAll');
+  let wantToHideAll = true;
+  var showHideReds = document.getElementById('showHideReds');
+  let wantToHideReds = true;
+  var showHideGreens = document.getElementById('showHideGreens');
+  let wantToHideGreens = true
+
+  if (wantToHideAll) {
+    wantToHideReds = true;
+    wantToHideGreens = true;
+    showHideReds.innerHTML = 'Show Reds';
+    showHideGreens.innerHTML = 'Show Greens';
+  } else {
+     wantToHideReds = false;
+     wantToHideGreens = false;
+     showHideReds.innerHTML = 'Hide Reds';
+     showHideGreens.innerHTML = 'Hide Greens';
+   }
+
+   if (wantToHideReds && wantToHideGreens) {
+     wantToHideAll = false;
+     showHideAll.innerHTML = 'Show all';
+   } else {
+     wantToHideAll = true;
+     showHideAll.innerHTML = 'Hide all';
+   }
+
+  showHideAll.addEventListener('click', (e) => {
+    if (wantToHideAll) {
+      for (let i=0; i<myChart.data.datasets.length; i++) {
+        console.log('show all');
+        myChart.data.datasets[i].hidden = false;
+        wantToHideAll = false;
+        wantToHideReds = false;
+        wantToHideGreens = false;
+        showHideAll.innerHTML = 'Hide All';
+        showHideReds.innerHTML = 'Hide Reds';
+        showHideGreens.innerHTML = 'Hide Greens';
+      }
+    } else {
+      for (let i=0; i<myChart.data.datasets.length; i++) {
+        console.log('hide all');
+        myChart.data.datasets[i].hidden = true;
+        wantToHideAll = true;
+        wantToHideReds = true;
+        wantToHideGreens = true;
+        showHideAll.innerHTML = 'Show All';
+        showHideReds.innerHTML = 'Show Reds';
+        showHideGreens.innerHTML = 'Show Greens';
+      }
+    }
+    myChart.update();
+  });
+
+
+  showHideReds.addEventListener('click', (e) => {
+    if (wantToHideReds) {
+      for (let i=0; i<myChart.data.datasets.length; i++) {
+          console.log('show reds');
+          myChart.data.datasets[i].borderColor === 'red' ? myChart.data.datasets[i].hidden = false :'';
+          wantToHideReds = false;
+          showHideReds.innerHTML = 'Hide Reds';
+      }
+        } else {
+          for (let i=0; i<myChart.data.datasets.length; i++) {
+          console.log('hide reds');
+          myChart.data.datasets[i].borderColor === 'red' ? myChart.data.datasets[i].hidden = true :'';
+          wantToHideReds = true;
+          showHideReds.innerHTML = 'Show Reds';
+        }
+      }
+    myChart.update();
+  });
+
+  showHideGreens.addEventListener('click', (e) => {
+    if (wantToHideGreens) {
+      for (let i=0; i<myChart.data.datasets.length; i++) {
+          console.log('show reds');
+          myChart.data.datasets[i].borderColor === 'green' ? myChart.data.datasets[i].hidden = false :'';
+          wantToHideGreens = false;
+          showHideGreens.innerHTML = 'Hide Greens';
+      }
+        } else {
+          for (let i=0; i<myChart.data.datasets.length; i++) {
+          console.log('hide greens');
+          myChart.data.datasets[i].borderColor === 'green' ? myChart.data.datasets[i].hidden = true :'';
+          wantToHideGreens = true;
+          showHideGreens.innerHTML = 'Show Greens';
+        }
+      }
+    myChart.update();
+  });
+
+
+  setTimeout(myChart.update(), 1000);
 });

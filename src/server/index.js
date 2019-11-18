@@ -36,15 +36,6 @@ var connection = mysql.createConnection({
 
 connection.connect();
 
-// connection.query(`SELECT ID, DATE_FORMAT(FROM_UNIXTIME(TimeStamp), '%Y-%m-%d %H:00') AS DATE, daemonMem FROM S3Results ORDER BY TimeStamp DESC`, function (error, results, fields) {
-//   if (error) throw error;
-//   console.log(results);
-//   getData(results);
-//   pageNotFound();
-// });
-
-
-
 app.get('/', (req, res) => {
   res.render('index', {title: 'SBC Monitor', data: listOfData});
 });

@@ -21,3 +21,12 @@ div {
   max-width: 100%;
   text-align: center;
 }
+
+.button {
+  border-radius: 5px;
+  float: left;
+}
+
+.button:active {
+  transform: translateY(2px);
+}
