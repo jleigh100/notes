@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
 
 app.get('/data', (req, res) => {
   connection.query(`
-    SELECT ID, DATE_FORMAT( FROM_UNIXTIME( TimeStamp ) , '%Y-%m-%d %H:00' ) AS DATE, AVG( daemonMem ) AS daemonMem
+    SELECT ID, DATE_FORMAT( FROM_UNIXTIME( TimeStamp ) , '%Y-%m-%d %H:00' ) AS DATE, AVG( daemonMem ) AS daemonMem, CoreDumps
     FROM S3Results
     WHERE TimeStamp >= 1573642675
     GROUP BY ID, DATE_FORMAT( FROM_UNIXTIME( TimeStamp ) , '%Y-%m-%d %H:00' )

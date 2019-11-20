@@ -8,12 +8,16 @@ main {
 }
 
 h1 {
-  font-size: 30px;
+  font-size: 23px;
 }
 
 div {
-  width: 1200px;
-  height: 720px;
+  width: 1000px;
+  height: auto;
+}
+
+.info {
+  font-size: 12px;
 }
 
 
@@ -22,9 +26,26 @@ div {
   text-align: center;
 }
 
+.sideBar {
+  text-align: center;
+  margin-top: 150px;
+  margin-right: 5px;
+  padding: 5px;
+  max-width: 525px;
+  width: auto;
+  height: auto;
+  top: 0;
+  right: 0;
+  position: absolute;
+  background-color: #eee;
+  opacity: 0.8;
+}
+
 .button {
   border-radius: 5px;
   float: left;
+  margin: 5px;
+  text-align: center;
 }
 
 .button:active {

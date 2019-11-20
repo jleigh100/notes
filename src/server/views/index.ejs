@@ -1,10 +1,17 @@
 <%- include('includes/heads'); %>
 <h1 class="centered">SBC monitoring</h1><br><br>
-<button id="showHideAll" class="button">Show all</button>
-<button id="showHideReds" class="button">Show reds</button>
+<button id="showHideAll" class="button">Hide All</button>
+<button id="showHideReds" class="button">Show Reds</button>
 <button id="showHideGreens" class="button">Show Greens</button>
-
+<br><br>
 
 <div>
   <canvas id="myChart"></canvas>
+</div>
+
+<div class="sideBar" id="sideBar" hidden>
+  <h1>Further information on SBC <span id="sideBarId"></span> </h1><br><br>
+  <h1>Date: <p class="info" id="sideBarDate"></p></h1><br>
+  <h1>DaemonMem used: <p class="info" id="sideBarDMemValue"></p></h1><br>
+  <h1>Core Dump data: <pre class="info" id="sideBarCoreDumps"><pre></h1><br>
 </div>

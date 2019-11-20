@@ -5,21 +5,29 @@ import $ from 'jquery';
 $.get('/data', function(data) {
   let ids = [];
   let dates = [];
+  let coreDumps = [];
 
   data.forEach((dataPoint) => {
     if (ids.indexOf(dataPoint.ID) === -1) ids.push(dataPoint.ID);
     if (dates.indexOf(dataPoint.DATE) === -1) dates.push(dataPoint.DATE);
+    coreDumps.push(dataPoint.CoreDumps);
   });
 
   ids = ids.reverse();
   dates = dates.reverse();
 
+  function getData (label, value, name) {
+    var num = name.replace(/\D/g,'');
+    for (let getCoreData=0;getCoreData<data.length;getCoreData++) {
+      console.log(data[getCoreData].ID , num , data[getCoreData].DATE , label , data[getCoreData].daemonMem , value);
+      if (data[getCoreData].ID == num && data[getCoreData].DATE === label && data[getCoreData].daemonMem === value) {
+        return coreDumps[getCoreData];
+      }
+    }
+  }
+
   var canvas = document.getElementById('myChart');
   var ctx = canvas.getContext('2d');
-
-  // var colorSelect = (currentDataPoints, id) => {
-  //   return (currentDataPoints[0].daemonMem === currentDataPoints[currentDataPoints.length-1].daemonMem) ? 'green' : 'red';
-  // }
 
   function colorSelect(array) {
     for(var i = 0; i < array.length - 1; i++) {
@@ -41,12 +49,12 @@ $.get('/data', function(data) {
                   label: 'ID: ' + id,
                   data: dates.map((date) => {
                     let dataPoint = currentDataPoints.find((dataPoint) => dataPoint.DATE === date);
-                    return dataPoint && dataPoint.daemonMem;
+                    return (dataPoint && dataPoint.daemonMem);
                   }),
                   borderWidth: 1,
                   fill: false,
                   borderColor: colorSelect(currentDataPoints),
-                  hidden: colorSelect(currentDataPoints) == 'green' ? true : false
+                  hidden: false
               };
               return output;
           })
@@ -59,7 +67,7 @@ $.get('/data', function(data) {
                 labelString: 'DaemonMem'
               },
                 ticks: {
-                    beginAtZero: true
+                    beginAtZero: false
                 }
             }],
             xAxes: [{
@@ -74,21 +82,41 @@ $.get('/data', function(data) {
 
   var myChart = new Chart(ctx, options);
 
+  var sideBar = document.getElementById('sideBar');
+  var sideBarId = document.getElementById('sideBarId');
+  var sideBarDMemValue = document.getElementById('sideBarDMemValue');
+  var sideBarDate = document.getElementById('sideBarDate');
+  var sideBarCoreDumps = document.getElementById('sideBarCoreDumps');
+
+  var showSideBar = (label, value, name, dumpData) => {
+      console.log(label, value, name);
+      sideBar.hidden = false;
+      sideBarId.innerHTML = name;
+      sideBarDMemValue.innerHTML = value;
+      sideBarDate.innerHTML = label;
+      sideBarCoreDumps.innerHTML = dumpData;
+  }
+
   canvas.addEventListener('click', evt => {
     var firstPoint = myChart.getElementAtEvent(evt)[0];
     if (firstPoint) {
       var label = myChart.data.labels[firstPoint._index];
       var value = myChart.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
-      console.log(label, value);
+      var name = myChart.data.datasets[firstPoint._datasetIndex].label;
+      var coreDumpInfo = getData(label, value, name).replace(/-rw/g, "\n-rw");
+      coreDumpInfo ? '' : coreDumpInfo = 'No data available';
+      console.log(coreDumpInfo);
+
+      showSideBar(label, value, name, coreDumpInfo);
     }
   });
 
   var showHideAll = document.getElementById('showHideAll');
-  let wantToHideAll = true;
   var showHideReds = document.getElementById('showHideReds');
-  let wantToHideReds = true;
   var showHideGreens = document.getElementById('showHideGreens');
-  let wantToHideGreens = true
+  var wantToHideAll = true;
+  var wantToHideReds = true;
+  var wantToHideGreens = true;
 
   if (wantToHideAll) {
     wantToHideReds = true;
@@ -104,16 +132,15 @@ $.get('/data', function(data) {
 
    if (wantToHideReds && wantToHideGreens) {
      wantToHideAll = false;
-     showHideAll.innerHTML = 'Show all';
+     showHideAll.innerHTML = 'Hide All';
    } else {
      wantToHideAll = true;
-     showHideAll.innerHTML = 'Hide all';
+     showHideAll.innerHTML = 'Show All';
    }
 
   showHideAll.addEventListener('click', (e) => {
     if (wantToHideAll) {
       for (let i=0; i<myChart.data.datasets.length; i++) {
-        console.log('show all');
         myChart.data.datasets[i].hidden = false;
         wantToHideAll = false;
         wantToHideReds = false;
@@ -124,7 +151,6 @@ $.get('/data', function(data) {
       }
     } else {
       for (let i=0; i<myChart.data.datasets.length; i++) {
-        console.log('hide all');
         myChart.data.datasets[i].hidden = true;
         wantToHideAll = true;
         wantToHideReds = true;
@@ -141,17 +167,15 @@ $.get('/data', function(data) {
   showHideReds.addEventListener('click', (e) => {
     if (wantToHideReds) {
       for (let i=0; i<myChart.data.datasets.length; i++) {
-          console.log('show reds');
-          myChart.data.datasets[i].borderColor === 'red' ? myChart.data.datasets[i].hidden = false :'';
-          wantToHideReds = false;
-          showHideReds.innerHTML = 'Hide Reds';
-      }
-        } else {
-          for (let i=0; i<myChart.data.datasets.length; i++) {
-          console.log('hide reds');
-          myChart.data.datasets[i].borderColor === 'red' ? myChart.data.datasets[i].hidden = true :'';
-          wantToHideReds = true;
-          showHideReds.innerHTML = 'Show Reds';
+        myChart.data.datasets[i].borderColor === 'red' ? myChart.data.datasets[i].hidden = false :'';
+        wantToHideReds = false;
+        showHideReds.innerHTML = 'Hide Reds';
+        }
+      } else {
+        for (let i=0; i<myChart.data.datasets.length; i++) {
+        myChart.data.datasets[i].borderColor === 'red' ? myChart.data.datasets[i].hidden = true :'';
+        wantToHideReds = true;
+        showHideReds.innerHTML = 'Show Reds';
         }
       }
     myChart.update();
@@ -160,14 +184,12 @@ $.get('/data', function(data) {
   showHideGreens.addEventListener('click', (e) => {
     if (wantToHideGreens) {
       for (let i=0; i<myChart.data.datasets.length; i++) {
-          console.log('show reds');
           myChart.data.datasets[i].borderColor === 'green' ? myChart.data.datasets[i].hidden = false :'';
           wantToHideGreens = false;
           showHideGreens.innerHTML = 'Hide Greens';
       }
         } else {
           for (let i=0; i<myChart.data.datasets.length; i++) {
-          console.log('hide greens');
           myChart.data.datasets[i].borderColor === 'green' ? myChart.data.datasets[i].hidden = true :'';
           wantToHideGreens = true;
           showHideGreens.innerHTML = 'Show Greens';
@@ -177,5 +199,5 @@ $.get('/data', function(data) {
   });
 
 
-  setTimeout(myChart.update(), 1000);
+  setInterval(myChart.update(), 1000);
 });
