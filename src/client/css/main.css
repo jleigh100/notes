@@ -8,7 +8,7 @@ main {
 }
 
 h1 {
-  font-size: 23px;
+  font-size: 20px;
 }
 
 div {
@@ -17,9 +17,8 @@ div {
 }
 
 .info {
-  font-size: 12px;
+  font-size: 13px;
 }
-
 
 .centered {
   max-width: 100%;
@@ -28,17 +27,28 @@ div {
 
 .sideBar {
   text-align: center;
-  margin-top: 150px;
-  margin-right: 5px;
   padding: 5px;
   max-width: 525px;
   width: auto;
   height: auto;
-  top: 0;
+  top: 50%;
+  transform: translateY(-50%);
   right: 0;
   position: absolute;
   background-color: #eee;
-  opacity: 0.8;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.sideBarExit {
+  top: 0;
+  padding: 5px;
+  float: left;
+  width: auto;
+  position: relative;
+  border-width: thin;
+  pointer-events: all;
+  cursor: pointer;
 }
 
 .button {

@@ -6,22 +6,40 @@ $.get('/data', function(data) {
   let ids = [];
   let dates = [];
   let coreDumps = [];
+  let coreUsage = [];
+  let haState = [];
+  let uptime = [];
+  let systemMem = [];
 
   data.forEach((dataPoint) => {
     if (ids.indexOf(dataPoint.ID) === -1) ids.push(dataPoint.ID);
     if (dates.indexOf(dataPoint.DATE) === -1) dates.push(dataPoint.DATE);
     coreDumps.push(dataPoint.CoreDumps);
+    coreUsage.push(dataPoint.CoreUsage);
+    haState.push(dataPoint.HAState);
+    uptime.push(dataPoint.Uptime);
+    systemMem.push(dataPoint.SystemMem);
+
   });
 
   ids = ids.reverse();
   dates = dates.reverse();
 
-  function getData (label, value, name) {
+  function getData (label, value, name, typeOfData) {
     var num = name.replace(/\D/g,'');
     for (let getCoreData=0;getCoreData<data.length;getCoreData++) {
-      console.log(data[getCoreData].ID , num , data[getCoreData].DATE , label , data[getCoreData].daemonMem , value);
       if (data[getCoreData].ID == num && data[getCoreData].DATE === label && data[getCoreData].daemonMem === value) {
-        return coreDumps[getCoreData];
+        if (typeOfData === 'dump') {
+          return coreDumps[getCoreData]
+        } else if (typeOfData === 'usage') {
+          return coreUsage[getCoreData];
+        } else if (typeOfData === 'hastate') {
+          return haState[getCoreData];
+        } else if (typeOfData === 'uptime') {
+          return uptime[getCoreData];
+        } else if (typeOfData === 'systemMem') {
+          return systemMem[getCoreData];
+        }
       }
     }
   }
@@ -87,14 +105,21 @@ $.get('/data', function(data) {
   var sideBarDMemValue = document.getElementById('sideBarDMemValue');
   var sideBarDate = document.getElementById('sideBarDate');
   var sideBarCoreDumps = document.getElementById('sideBarCoreDumps');
+  var sideBarCoreUsage = document.getElementById('sideBarCoreUsage');
+  var sideBarHaState = document.getElementById('sideBarHaState');
+  var sideBarUptime = document.getElementById('sideBarUptime');
+  var sideBarSystemMem = document.getElementById('sideBarSystemMem');
 
-  var showSideBar = (label, value, name, dumpData) => {
-      console.log(label, value, name);
+  var showSideBar = (label, value, name, dumpData, usageData, haData, uptime, systemMem) => {
       sideBar.hidden = false;
       sideBarId.innerHTML = name;
       sideBarDMemValue.innerHTML = value;
       sideBarDate.innerHTML = label;
       sideBarCoreDumps.innerHTML = dumpData;
+      sideBarCoreUsage.innerHTML = usageData;
+      sideBarHaState.innerHTML = haData;
+      sideBarUptime.innerHTML = uptime;
+      sideBarSystemMem.innerHTML = systemMem;
   }
 
   canvas.addEventListener('click', evt => {
@@ -103,20 +128,33 @@ $.get('/data', function(data) {
       var label = myChart.data.labels[firstPoint._index];
       var value = myChart.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
       var name = myChart.data.datasets[firstPoint._datasetIndex].label;
-      var coreDumpInfo = getData(label, value, name).replace(/-rw/g, "\n-rw");
+      var coreDumpInfo = getData(label, value, name, 'dump').replace(/-rw/g, "\n-rw");
       coreDumpInfo ? '' : coreDumpInfo = 'No data available';
-      console.log(coreDumpInfo);
-
-      showSideBar(label, value, name, coreDumpInfo);
+      var coreUsageInfo = getData(label, value, name, 'usage');
+      coreUsageInfo ? '' : coreUsageInfo = 'No data available';
+      var haStateInfo = getData(label, value, name, 'hastate');
+      haStateInfo ? '' : haStateInfo = 'No data available';
+      var uptimeInfo = getData(label, value, name, 'uptime');
+      uptimeInfo ? '' : uptimeInfo = 'No data available';
+      var systemMemInfo = getData(label, value, name, 'systemMem');
+      systemMemInfo ? '' : systemMemInfo = 'No data available';
+      showSideBar(label, value, name, coreDumpInfo, coreUsageInfo, haStateInfo, uptimeInfo, systemMemInfo);
     }
   });
+
+  var sideBarExit = document.getElementById('sideBarExit');
+
+  sideBarExit.addEventListener('click', (e) => {
+    sideBar.hidden = true;
+  });
+
 
   var showHideAll = document.getElementById('showHideAll');
   var showHideReds = document.getElementById('showHideReds');
   var showHideGreens = document.getElementById('showHideGreens');
-  var wantToHideAll = true;
-  var wantToHideReds = true;
-  var wantToHideGreens = true;
+  var wantToHideAll = false;
+  var wantToHideReds = false;
+  var wantToHideGreens = false;
 
   if (wantToHideAll) {
     wantToHideReds = true;
@@ -130,12 +168,14 @@ $.get('/data', function(data) {
      showHideGreens.innerHTML = 'Hide Greens';
    }
 
-   if (wantToHideReds && wantToHideGreens) {
-     wantToHideAll = false;
-     showHideAll.innerHTML = 'Hide All';
-   } else {
-     wantToHideAll = true;
-     showHideAll.innerHTML = 'Show All';
+   function showHide () {
+     if (wantToHideReds && wantToHideGreens) {
+       wantToHideAll = true;
+       showHideAll.innerHTML = 'Show All';
+     } else {
+       wantToHideAll = false;
+       showHideAll.innerHTML = 'Hide All';
+     }
    }
 
   showHideAll.addEventListener('click', (e) => {
@@ -160,6 +200,7 @@ $.get('/data', function(data) {
         showHideGreens.innerHTML = 'Show Greens';
       }
     }
+    showHide();
     myChart.update();
   });
 
@@ -178,6 +219,7 @@ $.get('/data', function(data) {
         showHideReds.innerHTML = 'Show Reds';
         }
       }
+    showHide();
     myChart.update();
   });
 
@@ -195,9 +237,10 @@ $.get('/data', function(data) {
           showHideGreens.innerHTML = 'Show Greens';
         }
       }
+    showHide();
     myChart.update();
   });
 
-
+  showHide();
   setInterval(myChart.update(), 1000);
 });

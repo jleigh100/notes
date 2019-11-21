@@ -1,8 +1,8 @@
 <%- include('includes/heads'); %>
 <h1 class="centered">SBC monitoring</h1><br><br>
 <button id="showHideAll" class="button">Hide All</button>
-<button id="showHideReds" class="button">Show Reds</button>
-<button id="showHideGreens" class="button">Show Greens</button>
+<button id="showHideReds" class="button">Hide Reds</button>
+<button id="showHideGreens" class="button">Hide Greens</button>
 <br><br>
 
 <div>
@@ -10,8 +10,17 @@
 </div>
 
 <div class="sideBar" id="sideBar" hidden>
-  <h1>Further information on SBC <span id="sideBarId"></span> </h1><br><br>
-  <h1>Date: <p class="info" id="sideBarDate"></p></h1><br>
-  <h1>DaemonMem used: <p class="info" id="sideBarDMemValue"></p></h1><br>
-  <h1>Core Dump data: <pre class="info" id="sideBarCoreDumps"><pre></h1><br>
+  <div class="sideBarExit" id="sideBarExit">X</div>
+  <h1>
+    Further information on SBC <span id="sideBarId"></span><br>
+    Date: <p class="info" id="sideBarDate"></p><br>
+    DaemonMem used: <p class="info" id="sideBarDMemValue"></p><br>
+    Core Dump data: <pre class="info" id="sideBarCoreDumps"></pre><br>
+    Core Usage: <p class="info" id="sideBarCoreUsage"></p><br>
+    HAState: <p class="info" id="sideBarHaState"></p><br>
+    Uptime: <p class="info" id="sideBarUptime"></p><br>
+    SystemMem: <pre class="info" id="sideBarSystemMem"></pre><br>
+  </h1>
 </div>
+</body>
+</html>
