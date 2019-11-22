@@ -58,6 +58,10 @@ div {
   text-align: center;
 }
 
+.active {
+  background-color: #aaa;
+}
+
 .button:active {
   transform: translateY(2px);
 }

@@ -42,8 +42,9 @@ app.get('/', (req, res) => {
 
 app.get('/data', (req, res) => {
   connection.query(`
-    SELECT ID, DATE_FORMAT( FROM_UNIXTIME( TimeStamp ) , '%Y-%m-%d %H:00' ) AS DATE, AVG( daemonMem ) AS daemonMem, CoreDumps, CoreUsage, HAState, Uptime, SystemMem
+    SELECT ID, DATE_FORMAT( FROM_UNIXTIME( TimeStamp ) , '%Y-%m-%d %H:00' ) AS DATE, AVG( daemonMem ) AS daemonMem, CoreDumps, CoreUsage, HAState, Uptime, SystemMem, Name
     FROM S3Results
+    INNER JOIN S3LogOn USING (ID)
     WHERE TimeStamp >= 1573642675
     GROUP BY ID, DATE_FORMAT( FROM_UNIXTIME( TimeStamp ) , '%Y-%m-%d %H:00' )
     ORDER BY TimeStamp DESC`, function (error, results, fields) {

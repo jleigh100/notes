@@ -10,6 +10,8 @@ $.get('/data', function(data) {
   let haState = [];
   let uptime = [];
   let systemMem = [];
+  let chartChoice = 'CoreUsage';
+
 
   data.forEach((dataPoint) => {
     if (ids.indexOf(dataPoint.ID) === -1) ids.push(dataPoint.ID);
@@ -19,18 +21,97 @@ $.get('/data', function(data) {
     haState.push(dataPoint.HAState);
     uptime.push(dataPoint.Uptime);
     systemMem.push(dataPoint.SystemMem);
-
   });
 
   ids = ids.reverse();
   dates = dates.reverse();
 
+  function getDifferentData (differentData) {
+    if (differentData === 'daemonMem') {
+      var daemonMemData = ids.map((id) => {
+        var currentDataPoints = data.filter((dataPoint) => dataPoint.ID === id).reverse();
+        let output = {
+          label: currentDataPoints[0].Name,
+          data: dates.map((date) => {
+            let dataPoint = currentDataPoints.find((dataPoint) => dataPoint.DATE === date);
+            return (dataPoint && dataPoint.daemonMem);
+          }),
+          borderWidth: 1,
+          fill: false,
+          borderColor: colorSelect(currentDataPoints),
+          hidden: false
+        };
+        return output;
+      })
+      return daemonMemData;
+    } else if (differentData === 'CoreUsage') {
+      var coreUsageData = ids.map((id) => {
+        var currentDataPoints = data.filter((dataPoint) => dataPoint.ID === id).reverse();
+        let output = {
+          label: currentDataPoints[0].Name,
+          data: dates.map((date) => {
+            let dataPoint = currentDataPoints.find((dataPoint) => dataPoint.DATE === date);
+            return (dataPoint && parseInt(dataPoint.CoreUsage));
+          }),
+          borderWidth: 1,
+          fill: false,
+          borderColor: colorSelect(currentDataPoints),
+          hidden: false,
+        };
+        return output;
+      })
+      return coreUsageData;
+    } else if (differentData === 'MemFree') {
+      var memFreeChart = ids.map((id) => {
+        var currentDataPoints = data.filter((dataPoint) => dataPoint.ID === id).reverse();
+        let output = {
+          label: currentDataPoints[0].Name,
+          data: dates.map((date) => {
+            let dataPoint = currentDataPoints.find((dataPoint) => dataPoint.DATE === date);
+            return (dataPoint && currentDataPoints[0].SystemMem.slice(38,54).trim());
+          }),
+          borderWidth: 1,
+          fill: false,
+          borderColor: colorSelect(currentDataPoints),
+          hidden: false,
+        };
+        return output;
+      })
+      return memFreeChart;
+    }
+  }
+
+function getDifferentDataLabels (chartChoice) {
+  if (chartChoice === 'daemonMem') {
+    return 'DaemonMem (kb)';
+  } else if (chartChoice === 'CoreUsage') {
+    return 'Core Usage (%)';
+  } else if (chartChoice === 'MemFree') {
+    return 'Memory Free (kb)';
+  } else {
+    return 'Error';
+  }
+}
+
+  function secondsToDhms(seconds) {
+  seconds = Number(seconds);
+  var d = Math.floor(seconds / (3600*24));
+  var h = Math.floor(seconds % (3600*24) / 3600);
+  var m = Math.floor(seconds % 3600 / 60);
+  var s = Math.floor(seconds % 60);
+
+  var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
+  var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+  var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+  var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+  return dDisplay + hDisplay + mDisplay + sDisplay;
+  }
+
   function getData (label, value, name, typeOfData) {
-    var num = name.replace(/\D/g,'');
     for (let getCoreData=0;getCoreData<data.length;getCoreData++) {
-      if (data[getCoreData].ID == num && data[getCoreData].DATE === label && data[getCoreData].daemonMem === value) {
+      if (data[getCoreData].DATE === label && data[getCoreData].Name == name) {
         if (typeOfData === 'dump') {
-          return coreDumps[getCoreData]
+          return coreDumps[getCoreData];
         } else if (typeOfData === 'usage') {
           return coreUsage[getCoreData];
         } else if (typeOfData === 'hastate') {
@@ -61,28 +142,14 @@ $.get('/data', function(data) {
       type: 'line',
       data: {
           labels: dates,
-          datasets: ids.map((id) => {
-              let currentDataPoints = data.filter((dataPoint) => dataPoint.ID === id).reverse();
-              let output =  {
-                  label: 'ID: ' + id,
-                  data: dates.map((date) => {
-                    let dataPoint = currentDataPoints.find((dataPoint) => dataPoint.DATE === date);
-                    return (dataPoint && dataPoint.daemonMem);
-                  }),
-                  borderWidth: 1,
-                  fill: false,
-                  borderColor: colorSelect(currentDataPoints),
-                  hidden: false
-              };
-              return output;
-          })
+          datasets: getDifferentData(chartChoice)
       },
       options: {
         scales: {
             yAxes: [{
               scaleLabel: {
                 display: true,
-                labelString: 'DaemonMem'
+                labelString: getDifferentDataLabels(chartChoice)
               },
                 ticks: {
                     beginAtZero: false
@@ -99,6 +166,34 @@ $.get('/data', function(data) {
   };
 
   var myChart = new Chart(ctx, options);
+
+  var daemonMemChart = document.getElementById('daemonMemChart');
+  var coreUsageChart = document.getElementById('coreUsageChart');
+  var memFreeChart = document.getElementById('memFreeChart');
+
+  daemonMemChart.addEventListener('click', (e) => {
+    daemonMemChart.classList.add("active");
+    coreUsageChart.classList.remove("active");
+    memFreeChart.classList.remove("active");
+    chartChoice = 'daemonMem';
+    myChart.update();
+  });
+  coreUsageChart.addEventListener('click', (e) => {
+    daemonMemChart.classList.remove("active");
+    coreUsageChart.classList.add("active");
+    memFreeChart.classList.remove("active");
+    chartChoice = 'CoreUsage';
+    myChart.update();
+  });
+  memFreeChart.addEventListener('click', (e) => {
+    daemonMemChart.classList.remove("active");
+    coreUsageChart.classList.remove("active");
+    memFreeChart.classList.add("active");
+    chartChoice = 'MemFree';
+    myChart.update();
+  });
+
+
 
   var sideBar = document.getElementById('sideBar');
   var sideBarId = document.getElementById('sideBarId');
@@ -118,7 +213,7 @@ $.get('/data', function(data) {
       sideBarCoreDumps.innerHTML = dumpData;
       sideBarCoreUsage.innerHTML = usageData;
       sideBarHaState.innerHTML = haData;
-      sideBarUptime.innerHTML = uptime;
+      sideBarUptime.innerHTML = secondsToDhms(uptime*60);
       sideBarSystemMem.innerHTML = systemMem;
   }
 
@@ -200,8 +295,8 @@ $.get('/data', function(data) {
         showHideGreens.innerHTML = 'Show Greens';
       }
     }
-    showHide();
     myChart.update();
+    showHide();
   });
 
 
@@ -219,28 +314,27 @@ $.get('/data', function(data) {
         showHideReds.innerHTML = 'Show Reds';
         }
       }
-    showHide();
     myChart.update();
+    showHide();
   });
 
   showHideGreens.addEventListener('click', (e) => {
     if (wantToHideGreens) {
       for (let i=0; i<myChart.data.datasets.length; i++) {
-          myChart.data.datasets[i].borderColor === 'green' ? myChart.data.datasets[i].hidden = false :'';
-          wantToHideGreens = false;
-          showHideGreens.innerHTML = 'Hide Greens';
+        myChart.data.datasets[i].borderColor === 'green' ? myChart.data.datasets[i].hidden = false : '';
+        wantToHideGreens = false;
+        showHideGreens.innerHTML = 'Hide Greens';
       }
-        } else {
-          for (let i=0; i<myChart.data.datasets.length; i++) {
-          myChart.data.datasets[i].borderColor === 'green' ? myChart.data.datasets[i].hidden = true :'';
-          wantToHideGreens = true;
-          showHideGreens.innerHTML = 'Show Greens';
-        }
+    } else {
+      for (let i=0; i<myChart.data.datasets.length; i++) {
+        myChart.data.datasets[i].borderColor === 'green' ? myChart.data.datasets[i].hidden = true : '';
+        wantToHideGreens = true;
+        showHideGreens.innerHTML = 'Show Greens';
       }
-    showHide();
-    myChart.update();
+    }
+      myChart.update();
+      showHide();
   });
 
   showHide();
-  setInterval(myChart.update(), 1000);
 });
