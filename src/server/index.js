@@ -9,8 +9,6 @@ import bodyParser from 'body-parser';
 const port = process.env.PORT || 3000;
 let app = express();
 
-var listOfData;
-
 if (process.env.NODE_ENV !== 'production') {
   const compiler = webpack(webpackOptions);
   app.use(middleware(compiler, { publicPath: '/js' }));
@@ -25,7 +23,6 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '/views'));
 
 
-
 var mysql      = require('mysql');
 var connection = mysql.createConnection({
   host     : '132.146.87.53',
@@ -37,7 +34,7 @@ var connection = mysql.createConnection({
 connection.connect();
 
 app.get('/', (req, res) => {
-  res.render('index', {title: 'SBC Monitor', data: listOfData});
+  res.render('index', {title: 'SBC Monitor'});
 });
 
 app.get('/data', (req, res) => {

@@ -1,30 +1,39 @@
-<%- include('includes/heads'); %>
-<h1 class="centered">SBC monitoring</h1>
-<button id="daemonMemChart" class="button active">DaemonMem chart</button>
-<button id="coreUsageChart" class="button">Core Usage chart</button>
-<button id="memFreeChart" class="button">Mem Free chart</button>
-<br><br><br>
-<button id="showHideAll" class="button">Hide All</button>
-<button id="showHideReds" class="button">Hide Reds</button>
-<button id="showHideGreens" class="button">Hide Greens</button>
-<br><br>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <script type="text/javascript" src="/js/bundle.js" defer></script>
+    <meta charset="utf-8">
+    <title><%= locals.title %></title>
+  </head>
+  <body>
+    <h1 class="centered">SBC monitoring</h1>
+    <button id="daemonMemChart" class="button active">DaemonMem chart</button>
+    <button id="coreUsageChart" class="button">Core Usage chart</button>
+    <button id="memFreeChart" class="button">Mem Free chart</button>
+    <br><br><br>
+    <button id="showHideAll" class="button">Hide All</button>
+    <button id="showHideReds" class="button">Hide Reds</button>
+    <button id="showHideGreens" class="button">Hide Greens</button>
+    <br><br>
+    <div>
+      <canvas id="myChart"></canvas>
+    </div>
+    <div class="sideBar" id="sideBar" hidden>
+      <div class="sideBarExit" id="sideBarExit">X</div>
+      <h1>
+        Further information on SBC <span id="sideBarId"></span><br>
+        Date: <p class="info" id="sideBarDate"></p><br>
+        <p id="sideBarDataType"></p> <p class="info" id="sideBarDataTypeValue"><pre class="info" id="sideBarDataTypeUnit"></pre><br>
+        <p>Core Dump data: </p><pre class="info" id="sideBarCoreDumps"></pre><br>
+        <p id="sideBarOppDataType"></p><p class="info" id="sideBarOppDataValue"></p><br>
+        HAState: <p class="info" id="sideBarHaState"></p><br>
+        Uptime: <p class="info" id="sideBarUptime"></p><br>
+        SystemMem: <pre class="info" id="sideBarSystemMem"></pre><br>
+      </h1>
+    </div>
 
-<div>
-  <canvas id="myChart"></canvas>
-</div>
-
-<div class="sideBar" id="sideBar" hidden>
-  <div class="sideBarExit" id="sideBarExit">X</div>
-  <h1>
-    Further information on SBC <span id="sideBarId"></span><br>
-    Date: <p class="info" id="sideBarDate"></p><br>
-    DaemonMem used: <p class="info" id="sideBarDMemValue"></p><br>
-    Core Dump data: <pre class="info" id="sideBarCoreDumps"></pre><br>
-    Core Usage: <p class="info" id="sideBarCoreUsage"></p><br>
-    HAState: <p class="info" id="sideBarHaState"></p><br>
-    Uptime: <p class="info" id="sideBarUptime"></p><br>
-    SystemMem: <pre class="info" id="sideBarSystemMem"></pre><br>
-  </h1>
-</div>
+    <button class="button refreshNow" id="refreshGraphNow">Click here to refresh the graph</button>
 </body>
 </html>

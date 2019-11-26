@@ -10,8 +10,8 @@ $.get('/data', function(data) {
   let haState = [];
   let uptime = [];
   let systemMem = [];
-  let chartChoice = 'CoreUsage';
-
+  let daemonMem = [];
+  let chartChoice = 'DaemonMem';
 
   data.forEach((dataPoint) => {
     if (ids.indexOf(dataPoint.ID) === -1) ids.push(dataPoint.ID);
@@ -21,90 +21,47 @@ $.get('/data', function(data) {
     haState.push(dataPoint.HAState);
     uptime.push(dataPoint.Uptime);
     systemMem.push(dataPoint.SystemMem);
+    daemonMem.push(dataPoint.daemonMem);
   });
 
   ids = ids.reverse();
   dates = dates.reverse();
 
   function getDifferentData (differentData) {
-    if (differentData === 'daemonMem') {
-      var daemonMemData = ids.map((id) => {
-        var currentDataPoints = data.filter((dataPoint) => dataPoint.ID === id).reverse();
-        let output = {
-          label: currentDataPoints[0].Name,
-          data: dates.map((date) => {
-            let dataPoint = currentDataPoints.find((dataPoint) => dataPoint.DATE === date);
+    var newData = ids.map((id) => {
+      var currentDataPoints = data.filter((dataPoint) => dataPoint.ID === id).reverse();
+      let output = {
+        label: currentDataPoints[0].Name,
+        data: dates.map((date) => {
+          let dataPoint = currentDataPoints.find((dataPoint) => dataPoint.DATE === date);
+          if (differentData === 'DaemonMem') {
             return (dataPoint && dataPoint.daemonMem);
-          }),
-          borderWidth: 1,
-          fill: false,
-          borderColor: colorSelect(currentDataPoints),
-          hidden: false
-        };
-        return output;
-      })
-      return daemonMemData;
-    } else if (differentData === 'CoreUsage') {
-      var coreUsageData = ids.map((id) => {
-        var currentDataPoints = data.filter((dataPoint) => dataPoint.ID === id).reverse();
-        let output = {
-          label: currentDataPoints[0].Name,
-          data: dates.map((date) => {
-            let dataPoint = currentDataPoints.find((dataPoint) => dataPoint.DATE === date);
-            return (dataPoint && parseInt(dataPoint.CoreUsage));
-          }),
-          borderWidth: 1,
-          fill: false,
-          borderColor: colorSelect(currentDataPoints),
-          hidden: false,
-        };
-        return output;
-      })
-      return coreUsageData;
-    } else if (differentData === 'MemFree') {
-      var memFreeChart = ids.map((id) => {
-        var currentDataPoints = data.filter((dataPoint) => dataPoint.ID === id).reverse();
-        let output = {
-          label: currentDataPoints[0].Name,
-          data: dates.map((date) => {
-            let dataPoint = currentDataPoints.find((dataPoint) => dataPoint.DATE === date);
-            return (dataPoint && currentDataPoints[0].SystemMem.slice(38,54).trim());
-          }),
-          borderWidth: 1,
-          fill: false,
-          borderColor: colorSelect(currentDataPoints),
-          hidden: false,
-        };
-        return output;
-      })
-      return memFreeChart;
+          } else if (differentData === 'CoreUsage') {
+            return (dataPoint && parseFloat(dataPoint.CoreUsage));
+          } else if (differentData === 'MemFree') {
+          return (dataPoint && dataPoint.SystemMem.slice(37,54).trim());
+          }
+        }),
+        borderWidth: 1,
+        fill: false,
+        borderColor: colorSelect(currentDataPoints),
+        hidden: false
+      };
+      return output;
+    })
+    return newData;
+  }
+
+  function getDifferentDataLabels (chartChoice) {
+    if (chartChoice === 'DaemonMem') {
+      return 'DaemonMem (kb)';
+    } else if (chartChoice === 'CoreUsage') {
+      return 'Core Usage (%)';
+    } else if (chartChoice === 'MemFree') {
+      return 'Memory Free (kb)';
+    } else {
+      return 'Error';
     }
-  }
-
-function getDifferentDataLabels (chartChoice) {
-  if (chartChoice === 'daemonMem') {
-    return 'DaemonMem (kb)';
-  } else if (chartChoice === 'CoreUsage') {
-    return 'Core Usage (%)';
-  } else if (chartChoice === 'MemFree') {
-    return 'Memory Free (kb)';
-  } else {
-    return 'Error';
-  }
-}
-
-  function secondsToDhms(seconds) {
-  seconds = Number(seconds);
-  var d = Math.floor(seconds / (3600*24));
-  var h = Math.floor(seconds % (3600*24) / 3600);
-  var m = Math.floor(seconds % 3600 / 60);
-  var s = Math.floor(seconds % 60);
-
-  var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
-  var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
-  var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-  var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
-  return dDisplay + hDisplay + mDisplay + sDisplay;
   }
 
   function getData (label, value, name, typeOfData) {
@@ -120,52 +77,70 @@ function getDifferentDataLabels (chartChoice) {
           return uptime[getCoreData];
         } else if (typeOfData === 'systemMem') {
           return systemMem[getCoreData];
+        } else if (typeOfData === 'daemonMem') {
+          return daemonMem[getCoreData];
         }
       }
     }
   }
 
-  var canvas = document.getElementById('myChart');
-  var ctx = canvas.getContext('2d');
-
   function colorSelect(array) {
     for(var i = 0; i < array.length - 1; i++) {
+      if (chartChoice === 'DaemonMem') {
         if(array[i].daemonMem != array[i+1].daemonMem) {
             return 'red';
         }
+      } else if (chartChoice === 'CoreUsage') {
+          if(array[i].CoreUsage != array[i+1].CoreUsage) {
+            return 'red';
+          }
+      } else if (chartChoice === 'MemFree') {
+          if(array[i].SystemMem.slice(37,54).trim() != array[i+1].SystemMem.slice(37,54).trim()) {
+            return 'red';
+          }
+      }
     }
     return 'green';
-}
+  }
 
-
-  var options = {
-      type: 'line',
-      data: {
-          labels: dates,
-          datasets: getDifferentData(chartChoice)
-      },
-      options: {
-        scales: {
-            yAxes: [{
-              scaleLabel: {
-                display: true,
-                labelString: getDifferentDataLabels(chartChoice)
-              },
-                ticks: {
-                    beginAtZero: false
+  function  getOptions () {
+    var options = {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: getDifferentData(chartChoice)
+        },
+        options: {
+          scales: {
+              yAxes: [{
+                scaleLabel: {
+                  display: true,
+                  labelString: getDifferentDataLabels(chartChoice)
+                },
+                  ticks: {
+                      beginAtZero: false
+                  }
+              }],
+              xAxes: [{
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Date'
                 }
-            }],
-            xAxes: [{
-              scaleLabel: {
-                display: true,
-                labelString: 'Date'
-              }
-            }]
-        }
-    }
-  };
+              }]
+          }
+      }
+    };
+    return options;
+  }
 
-  var myChart = new Chart(ctx, options);
+  var canvas = document.getElementById('myChart');
+  var ctx = canvas.getContext('2d');
+  var myChart = new Chart(ctx, getOptions());
+
+  function refreshGraph () {
+    myChart.destroy();
+    myChart = new Chart(ctx, getOptions());
+  }
 
   var daemonMemChart = document.getElementById('daemonMemChart');
   var coreUsageChart = document.getElementById('coreUsageChart');
@@ -175,49 +150,71 @@ function getDifferentDataLabels (chartChoice) {
     daemonMemChart.classList.add("active");
     coreUsageChart.classList.remove("active");
     memFreeChart.classList.remove("active");
-    chartChoice = 'daemonMem';
-    myChart.update();
+    chartChoice = 'DaemonMem';
+    refreshGraph();
   });
   coreUsageChart.addEventListener('click', (e) => {
     daemonMemChart.classList.remove("active");
     coreUsageChart.classList.add("active");
     memFreeChart.classList.remove("active");
     chartChoice = 'CoreUsage';
-    myChart.update();
+    refreshGraph();
   });
   memFreeChart.addEventListener('click', (e) => {
     daemonMemChart.classList.remove("active");
     coreUsageChart.classList.remove("active");
     memFreeChart.classList.add("active");
     chartChoice = 'MemFree';
-    myChart.update();
+    refreshGraph();
   });
 
+  function secondsToDhms(seconds) {
+    seconds = Number(seconds);
+    var d = Math.floor(seconds / (3600*24));
+    var h = Math.floor(seconds % (3600*24) / 3600);
+    var m = Math.floor(seconds % 3600 / 60);
+    var s = Math.floor(seconds % 60);
 
+    var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
+    var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+    var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+    var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+    return dDisplay + hDisplay + mDisplay + sDisplay;
+  }
 
   var sideBar = document.getElementById('sideBar');
   var sideBarId = document.getElementById('sideBarId');
-  var sideBarDMemValue = document.getElementById('sideBarDMemValue');
+  var sideBarDataType = document.getElementById('sideBarDataType');
+  var sideBarDataTypeValue = document.getElementById('sideBarDataTypeValue');
   var sideBarDate = document.getElementById('sideBarDate');
   var sideBarCoreDumps = document.getElementById('sideBarCoreDumps');
-  var sideBarCoreUsage = document.getElementById('sideBarCoreUsage');
+  var sideBarOppDataValue = document.getElementById('sideBarOppDataValue');
   var sideBarHaState = document.getElementById('sideBarHaState');
   var sideBarUptime = document.getElementById('sideBarUptime');
   var sideBarSystemMem = document.getElementById('sideBarSystemMem');
+  var sideBarDataTypeUnit = document.getElementById('sideBarDataTypeUnit');
+  var sideBarOppDataType = document.getElementById('sideBarOppDataType');
 
-  var showSideBar = (label, value, name, dumpData, usageData, haData, uptime, systemMem) => {
+  var showSideBar = (label, value, name, dataType, dumpData, usageData, haData, uptime, systemMem, daemonMem) => {
       sideBar.hidden = false;
-      sideBarId.innerHTML = name;
-      sideBarDMemValue.innerHTML = value;
       sideBarDate.innerHTML = label;
+      (dataType === 'DaemonMem' || dataType === 'MemFree') ? sideBarDataTypeValue.innerHTML = value.toLocaleString() + ' kb' : sideBarDataTypeValue.innerHTML = value + ' %';
+      sideBarId.innerHTML = name;
+      sideBarDataType.innerHTML = dataType + ':';
       sideBarCoreDumps.innerHTML = dumpData;
-      sideBarCoreUsage.innerHTML = usageData;
+      if (dataType === 'DaemonMem') {
+        sideBarOppDataType.innerHTML = 'Core Usage: ';
+        sideBarOppDataValue.innerHTML = usageData;
+      } else {
+        sideBarOppDataType.innerHTML = 'DaemonMem: ';
+        sideBarOppDataValue.innerHTML = daemonMem.toLocaleString();
+      }
       sideBarHaState.innerHTML = haData;
       sideBarUptime.innerHTML = secondsToDhms(uptime*60);
       sideBarSystemMem.innerHTML = systemMem;
   }
 
-  canvas.addEventListener('click', evt => {
+    canvas.addEventListener('click', evt => {
     var firstPoint = myChart.getElementAtEvent(evt)[0];
     if (firstPoint) {
       var label = myChart.data.labels[firstPoint._index];
@@ -232,17 +229,17 @@ function getDifferentDataLabels (chartChoice) {
       var uptimeInfo = getData(label, value, name, 'uptime');
       uptimeInfo ? '' : uptimeInfo = 'No data available';
       var systemMemInfo = getData(label, value, name, 'systemMem');
-      systemMemInfo ? '' : systemMemInfo = 'No data available';
-      showSideBar(label, value, name, coreDumpInfo, coreUsageInfo, haStateInfo, uptimeInfo, systemMemInfo);
+      systemMemInfo ? '' : systemMemInfo = 'No data available'
+      var daemonMemInfo = getData(label, value, name, 'daemonMem');
+      daemonMemInfo ? '' : daemonMemInfo = 'No data available'
+      showSideBar(label, parseInt(value), name, chartChoice, coreDumpInfo, coreUsageInfo, haStateInfo, uptimeInfo, systemMemInfo, daemonMemInfo);
     }
   });
 
   var sideBarExit = document.getElementById('sideBarExit');
-
   sideBarExit.addEventListener('click', (e) => {
     sideBar.hidden = true;
   });
-
 
   var showHideAll = document.getElementById('showHideAll');
   var showHideReds = document.getElementById('showHideReds');
@@ -299,7 +296,6 @@ function getDifferentDataLabels (chartChoice) {
     showHide();
   });
 
-
   showHideReds.addEventListener('click', (e) => {
     if (wantToHideReds) {
       for (let i=0; i<myChart.data.datasets.length; i++) {
@@ -337,4 +333,10 @@ function getDifferentDataLabels (chartChoice) {
   });
 
   showHide();
+
+  document.getElementById('refreshGraphNow').addEventListener('click', (e) => {
+    refreshGraph();
+  })
+
+  setInterval(refreshGraph, 1000 * 60 * 60); // 1 hour
 });
