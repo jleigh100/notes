@@ -6,7 +6,7 @@ import middleware from 'webpack-dev-middleware';
 import webpackOptions from '../../webpack.config';
 import bodyParser from 'body-parser';
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 9000;
 let app = express();
 
 if (process.env.NODE_ENV !== 'production') {

@@ -103,7 +103,7 @@ $.get('/data', function(data) {
     return 'green';
   }
 
-  function  getOptions () {
+  function getOptions () {
     var options = {
         type: 'line',
         data: {
@@ -140,6 +140,7 @@ $.get('/data', function(data) {
   function refreshGraph () {
     myChart.destroy();
     myChart = new Chart(ctx, getOptions());
+    sideBar.hidden = true;
   }
 
   var daemonMemChart = document.getElementById('daemonMemChart');
@@ -169,17 +170,16 @@ $.get('/data', function(data) {
   });
 
   function secondsToDhms(seconds) {
+    console.log(seconds);
     seconds = Number(seconds);
     var d = Math.floor(seconds / (3600*24));
     var h = Math.floor(seconds % (3600*24) / 3600);
     var m = Math.floor(seconds % 3600 / 60);
-    var s = Math.floor(seconds % 60);
 
     var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
     var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
-    var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-    var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
-    return dDisplay + hDisplay + mDisplay + sDisplay;
+    var mDisplay = m > 0 ? m + (m == 1 ? " minute" : " minutes") : "";
+    return dDisplay + hDisplay + mDisplay;
   }
 
   var sideBar = document.getElementById('sideBar');
@@ -195,7 +195,7 @@ $.get('/data', function(data) {
   var sideBarDataTypeUnit = document.getElementById('sideBarDataTypeUnit');
   var sideBarOppDataType = document.getElementById('sideBarOppDataType');
 
-  var showSideBar = (label, value, name, dataType, dumpData, usageData, haData, uptime, systemMem, daemonMem) => {
+  function showSideBar (label, value, name, dataType, dumpData, usageData, haData, uptime, systemMem, daemonMem) {
       sideBar.hidden = false;
       sideBarDate.innerHTML = label;
       (dataType === 'DaemonMem' || dataType === 'MemFree') ? sideBarDataTypeValue.innerHTML = value.toLocaleString() + ' kb' : sideBarDataTypeValue.innerHTML = value + ' %';
@@ -207,7 +207,7 @@ $.get('/data', function(data) {
         sideBarOppDataValue.innerHTML = usageData;
       } else {
         sideBarOppDataType.innerHTML = 'DaemonMem: ';
-        sideBarOppDataValue.innerHTML = daemonMem.toLocaleString();
+        sideBarOppDataValue.innerHTML = daemonMem.toLocaleString() + 'kb';
       }
       sideBarHaState.innerHTML = haData;
       sideBarUptime.innerHTML = secondsToDhms(uptime*60);

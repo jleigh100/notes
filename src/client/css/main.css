@@ -53,6 +53,7 @@ div {
 
 .button {
   border-radius: 5px;
+  font-size: 14px;
   float: left;
   margin: 5px;
   text-align: center;
@@ -62,7 +63,7 @@ div {
   background-color: #aaa;
 }
 
-.refreshNow {
+.refreshPage {
   float: right;
   position: absolute;
   bottom: 0;
